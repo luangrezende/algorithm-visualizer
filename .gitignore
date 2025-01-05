@@ -1,0 +1,45 @@
+# Build output directories
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+
+# Auto-generated and lock files
+*.lock
+*.log
+
+# Environment-specific files
+.env
+
+# Visual Studio and IDE-specific files
+.vscode/
+.idea/
+.vs/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+*.pidb
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# NuGet packages and artifacts
+*.nupkg
+*.snupkg
+packages/
+
+# Testing
+TestResults/
+
+# Resharper settings
+_ReSharper*/
+*.DotSettings.user
+
+# Rider IDE
+.idea/
