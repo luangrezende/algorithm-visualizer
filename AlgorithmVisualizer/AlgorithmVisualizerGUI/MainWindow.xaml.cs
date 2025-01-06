@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -16,9 +20,14 @@ namespace AlgorithmVisualizerGUI
         public MainWindow()
         {
             InitializeComponent();
+            InitializeEvents();
+            UpdateButtonStates();
+        }
+
+        private void InitializeEvents()
+        {
             StartButton.Click += StartButton_Click;
             StopButton.Click += StopButton_Click;
-            UpdateButtonStates();
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
@@ -34,56 +43,31 @@ namespace AlgorithmVisualizerGUI
             UpdateButtonStates();
 
             int[] data = ArrayGenerator.GenerateShuffledArray(100);
-            VisualizerCanvas.Children.Clear();
-
+            ClearCanvas();
             RenderArray(data, -1, -1);
 
-            var selectedAlgorithm = ((ComboBoxItem)AlgorithmSelector.SelectedItem)?.Content.ToString();
-            if (selectedAlgorithm == null)
+            var algorithm = GetSelectedAlgorithm();
+            if (algorithm == null)
             {
-                MessageBox.Show("Selecione um algoritmo antes de começar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
-                _isRunning = false;
-                UpdateButtonStates();
+                ShowMessage("Please select an algorithm.", "Warning", MessageBoxImage.Warning);
+                ResetExecutionState();
                 return;
             }
 
-            ISortingAlgorithm algorithm = selectedAlgorithm switch
-            {
-                "Bubble Sort" => new BubbleSort(),
-                "Quick Sort" => new QuickSort(),
-                "Merge Sort" => new MergeSort(),
-                "Selection Sort" => new SelectionSort(),
-                "Heap Sort" => new HeapSort(),
-                "Insertion Sort" => new InsertionSort(),
-                _ => throw new InvalidOperationException("Algoritmo inválido.")
-            };
-
             try
             {
-                await Task.Run(() =>
-                {
-                    algorithm.Sort(data, (array, index1, index2) =>
-                    {
-                        if (_cancellationTokenSource.Token.IsCancellationRequested)
-                        {
-                            throw new OperationCanceledException();
-                        }
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            RenderArray(array, index1, index2);
-                        });
-                    }, _cancellationTokenSource.Token);
-                }, _cancellationTokenSource.Token);
+                await ExecuteAlgorithm(algorithm, data);
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessage($"Error: {ex.Message}", "Error", MessageBoxImage.Error);
             }
             finally
             {
-                _isRunning = false;
-                UpdateButtonStates();
+                ResetExecutionState();
             }
         }
 
@@ -92,55 +76,91 @@ namespace AlgorithmVisualizerGUI
             StopExecution();
         }
 
-        private void StopExecution()
+        private async Task ExecuteAlgorithm(ISortingAlgorithm algorithm, int[] data)
         {
-            if (_isRunning)
+            await Task.Run(() =>
             {
-                _cancellationTokenSource?.Cancel();
-                _isRunning = false;
-                VisualizerCanvas.Children.Clear();
-                UpdateButtonStates();
-            }
+                algorithm.Sort(data, (array, index1, index2) =>
+                {
+                    if (_cancellationTokenSource.Token.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
+                    Dispatcher.Invoke(() => RenderArray(array, index1, index2));
+                }, _cancellationTokenSource.Token);
+            }, _cancellationTokenSource.Token);
+        }
+
+        private ISortingAlgorithm GetSelectedAlgorithm()
+        {
+            return ((ComboBoxItem)AlgorithmSelector.SelectedItem)?.Content.ToString() switch
+            {
+                "Bubble Sort" => new BubbleSort(),
+                "Quick Sort" => new QuickSort(),
+                "Merge Sort" => new MergeSort(),
+                "Selection Sort" => new SelectionSort(),
+                "Heap Sort" => new HeapSort(),
+                "Insertion Sort" => new InsertionSort(),
+                _ => null
+            };
         }
 
         private void RenderArray(int[] array, int index1, int index2)
         {
-            VisualizerCanvas.Children.Clear();
+            ClearCanvas();
 
-            double canvasWidth = VisualizerCanvas.ActualWidth > 0 ? VisualizerCanvas.ActualWidth : 800;
-            double canvasHeight = VisualizerCanvas.ActualHeight > 0 ? VisualizerCanvas.ActualHeight : 400;
-
-            double barWidth = canvasWidth / array.Length;
-            barWidth = Math.Max(barWidth, 1);
-
-            int maxValue = array.Length > 0 ? array.Max() : 1;
-            double marginTop = 20;
+            double canvasWidth = Math.Max(VisualizerCanvas.ActualWidth, 800);
+            double canvasHeight = Math.Max(VisualizerCanvas.ActualHeight, 400);
+            double barWidth = Math.Max(canvasWidth / array.Length, 1);
+            int maxValue = array.Max();
 
             for (int i = 0; i < array.Length; i++)
             {
-                Brush fillBrush;
-                if (i == index1) fillBrush = Brushes.GreenYellow;
-                else if (i == index2) fillBrush = Brushes.Red;
-                else fillBrush = Brushes.Gray;
-
-                var rect = new Rectangle
-                {
-                    Width = barWidth,
-                    Height = ((array[i] / (double)maxValue) * (canvasHeight - marginTop)),
-                    Fill = fillBrush,
-                    Stroke = null
-                };
-
+                var rect = CreateRectangle(array[i], maxValue, barWidth, canvasHeight - 20, i == index1, i == index2);
                 Canvas.SetLeft(rect, i * barWidth);
                 Canvas.SetBottom(rect, 0);
                 VisualizerCanvas.Children.Add(rect);
             }
         }
 
+        private Rectangle CreateRectangle(int value, int maxValue, double width, double maxHeight, bool isActive, bool isCompared)
+        {
+            var fillBrush = isActive ? Brushes.GreenYellow : isCompared ? Brushes.Red : Brushes.Gray;
+
+            return new Rectangle
+            {
+                Width = width,
+                Height = (value / (double)maxValue) * maxHeight,
+                Fill = fillBrush,
+                Stroke = null
+            };
+        }
+
+        private void ClearCanvas()
+        {
+            VisualizerCanvas.Children.Clear();
+        }
+
         private void UpdateButtonStates()
         {
             StartButton.IsEnabled = !_isRunning;
             StopButton.IsEnabled = _isRunning;
+        }
+
+        private void StopExecution()
+        {
+            _cancellationTokenSource?.Cancel();
+            ClearCanvas();
+        }
+
+        private void ResetExecutionState()
+        {
+            _isRunning = false;
+            UpdateButtonStates();
+        }
+
+        private void ShowMessage(string message, string title, MessageBoxImage icon)
+        {
+            MessageBox.Show(message, title, MessageBoxButton.OK, icon);
         }
     }
 }
