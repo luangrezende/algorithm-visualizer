@@ -63,7 +63,7 @@ An interactive **sorting algorithm visualizer** built with C#, now featuring a *
 
 ### Main Interface
 
-![Algorithm Visualizer GUI](preview.png)
+![Algorithm Visualizer GUI](![alt text](image.png))
 
 - **VisualizerCanvas**: Displays the array as bars.
 - **Controls**: Dropdown to select algorithms, and buttons to start or stop execution.
