@@ -1,155 +1,98 @@
 
 # Algorithm Visualizer
 
-This project is a **console-based algorithm visualizer** that demonstrates sorting algorithms in action by rendering visual representations of the sorting process. It supports various sorting algorithms and provides a dynamic way to observe their behavior step-by-step.
+An interactive **sorting algorithm visualizer** built with C#, now featuring a **modern WPF-based GUI**. This application provides an intuitive way to learn and understand how various sorting algorithms work through real-time visualizations.
 
 ---
 
 ## Features
 
-- **Sorting Algorithms**
+- **Algorithms Supported**:
   - Bubble Sort
   - Quick Sort
   - Merge Sort
-  - Insertion Sort
   - Selection Sort
   - Heap Sort
-
-- **Dynamic Visualizations**
-  - Bars are rendered vertically in the console.
-  - Real-time updates highlight active comparisons and swaps.
-  - Execution time displayed after sorting is completed.
-
-- **Customizable**
-  - Array size and value ranges can be modified.
-  - Add new sorting algorithms easily by following the provided interface.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- **.NET 6.0 or later** installed on your machine.
-- A terminal or console that supports Unicode characters (e.g., Windows Terminal).
-
-### Cloning the Repository
-
-```bash
-git clone https://github.com/luangrezende/algorithm-visualizer.git
-cd algorithm-visualizer
-```
-
-### Running the Application
-
-1. Open the project in your favorite IDE (e.g., Visual Studio, JetBrains Rider, or VS Code).
-2. Build and run the project.
-3. Follow the console instructions to select a sorting algorithm.
+  - Insertion Sort
+- **Dynamic Visualization**:
+  - Bars represent the array elements.
+  - Colors:
+    - **Gray**: Default state.
+    - **Red**: Comparing elements.
+    - **GreenYellow**: Selected or currently active element.
+- **Interactive Controls**:
+  - Start and stop buttons for controlling the execution.
+  - Algorithm selection via a dropdown menu.
+- **Customizable Execution Speed**:
+  - Modify the delay globally to adjust visualization speed.
 
 ---
 
-## Usage
+## Technology Stack
 
-### Example Output
-
-Upon running the program, you'll see:
-
-```text
-Choose a sorting algorithm:
-1. Bubble Sort
-2. Quick Sort
-3. Merge Sort
-Enter the number of the desired algorithm: 2
-```
-
-After selection, the sorting process will start, and you'll see the visualization in the console:
-
-```text
-Algorithm: Quick Sort
-Execution Time: 2.53 seconds
---------------------------------------------------
-████
-█████
-██████
-...
-```
+- **Frontend**: Windows Presentation Foundation (WPF)
+- **Backend**: C# (.NET)
+- **Other Tools**:
+  - LINQ for array manipulations.
+  - Multithreading with `Task` and `CancellationToken` for smooth execution and interrupt handling.
 
 ---
 
-## Project Structure
+## Installation and Usage
 
-```
-AlgorithmVisualizer/
-├── Program.cs                      // Main entry point
-├── Utils/
-│   ├── ArrayGenerator.cs           // Generates arrays for sorting
-│   ├── ArrayRenderer.cs            // Renders visual representations of arrays
-├── Sort/
-│   ├── Interfaces/
-│   │   ├── ISortingAlgorithm.cs    // Interface for sorting algorithms
-│   ├── BubbleSort.cs               // Implementation of Bubble Sort
-│   ├── QuickSort.cs                // Implementation of Quick Sort
-│   ├── MergeSort.cs                // Implementation of Merge Sort
-│   ├── InsertionSort.cs            // Implementation of Insertion Sort
-│   ├── SelectionSort.cs            // Implementation of Selection Sort
-│   ├── HeapSort.cs                 // Implementation of Heap Sort
-```
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/luangrezende/algorithm-visualizer.git
+   ```
+2. Open the project in Visual Studio.
+3. Build the solution to restore dependencies.
+4. Run the project.
 
 ---
 
-## How to Add a New Sorting Algorithm
+## How It Works
 
-1. Create a new file in the `Sort` folder (e.g., `NewSort.cs`).
-2. Implement the `ISortingAlgorithm` interface.
-
-```csharp
-using AlgorithmVisualizer.Sort.Interfaces;
-
-public class NewSort : ISortingAlgorithm
-{
-    public string Name => "New Sort";
-
-    public void Sort(int[] array, Action<int[], int, int> render)
-    {
-        // Sorting logic here
-        // Call render(array, activeIndex, adjustedIndex) to visualize the process
-    }
-}
-```
-
-3. Add the new algorithm to the selection menu in `Program.cs`:
-
-```csharp
-case "7":
-    return new NewSort();
-```
+1. **Launch the application**: A WPF window with a dropdown for algorithm selection and Start/Stop buttons will appear.
+2. **Choose an algorithm**: Select your desired sorting algorithm from the dropdown menu.
+3. **Click "Start"**: Watch the algorithm dynamically sort a randomized array of integers.
+4. **Stop or restart**: Use the Stop button to interrupt and reset the visualization.
 
 ---
 
-## Customization
+## Preview
 
-- Modify `maxHeight` in `ArrayRenderer.cs` to adjust the visual height of the bars.
-- Update `ArrayGenerator.cs` to change the size or range of the generated array.
+### Main Interface
 
----
+![Algorithm Visualizer GUI](preview.png)
 
-## Future Enhancements
-
-- Support for more complex algorithms (e.g., Radix Sort, Shell Sort).
-- Graphical user interface (GUI) for enhanced visualization.
-- More visual styles for representing data.
-- Support for custom input arrays.
+- **VisualizerCanvas**: Displays the array as bars.
+- **Controls**: Dropdown to select algorithms, and buttons to start or stop execution.
 
 ---
 
-## Contributing
+## Future Improvements
 
-Contributions are welcome! Feel free to open issues or submit pull requests for improvements or new features.
+- Add more sorting algorithms (e.g., Radix Sort, Shell Sort).
+- Implement array size customization.
+- Provide detailed step-by-step textual explanations for each algorithm.
+
+---
+
+## Contributions
+
+Contributions are welcome! To contribute:
+1. Fork this repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+3. Commit your changes and push the branch.
+4. Open a pull request.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
