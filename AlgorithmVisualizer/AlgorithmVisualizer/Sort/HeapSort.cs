@@ -1,4 +1,5 @@
 ﻿using AlgorithmVisualizer.Sort.Interfaces;
+using AlgorithmVisualizer.Utils.AlgorithmVisualizer.Utils;
 
 namespace AlgorithmVisualizer.Sort
 {
@@ -6,23 +7,32 @@ namespace AlgorithmVisualizer.Sort
     {
         public string Name => "Heap Sort";
 
-        public void Sort(int[] array, Action<int[], int, int> render)
+        public void Sort(int[] array, Action<int[], int, int> render, CancellationToken cancellationToken)
         {
             int n = array.Length;
 
             for (int i = n / 2 - 1; i >= 0; i--)
-                Heapify(array, n, i, render);
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                Heapify(array, n, i, render, cancellationToken);
+            }
 
             for (int i = n - 1; i > 0; i--)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Swap(array, 0, i);
                 render(array, i, 0);
-                Heapify(array, i, 0, render);
+                Thread.Sleep(AlgorithmSettings.Delay);
+
+                Heapify(array, i, 0, render, cancellationToken);
             }
         }
 
-        private void Heapify(int[] array, int n, int i, Action<int[], int, int> render)
+        private void Heapify(int[] array, int n, int i, Action<int[], int, int> render, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             int largest = i;
             int left = 2 * i + 1;
             int right = 2 * i + 2;
@@ -37,7 +47,9 @@ namespace AlgorithmVisualizer.Sort
             {
                 Swap(array, i, largest);
                 render(array, i, largest);
-                Heapify(array, n, largest, render);
+                Thread.Sleep(AlgorithmSettings.Delay);
+
+                Heapify(array, n, largest, render, cancellationToken);
             }
         }
 

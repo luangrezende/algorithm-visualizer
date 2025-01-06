@@ -1,5 +1,5 @@
-﻿using System;
-using AlgorithmVisualizer.Sort.Interfaces;
+﻿using AlgorithmVisualizer.Sort.Interfaces;
+using AlgorithmVisualizer.Utils.AlgorithmVisualizer.Utils;
 
 namespace AlgorithmVisualizer.Sort
 {
@@ -7,24 +7,32 @@ namespace AlgorithmVisualizer.Sort
     {
         public string Name => "Selection Sort";
 
-        public void Sort(int[] array, Action<int[], int, int> render)
+        public void Sort(int[] array, Action<int[], int, int> render, CancellationToken cancellationToken)
         {
             for (int i = 0; i < array.Length - 1; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 int minIndex = i;
 
                 for (int j = i + 1; j < array.Length; j++)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     render(array, j, minIndex);
+                    Thread.Sleep(AlgorithmSettings.Delay);
+
                     if (array[j] < array[minIndex])
                     {
                         minIndex = j;
                         render(array, j, minIndex);
+                        Thread.Sleep(AlgorithmSettings.Delay);
                     }
                 }
 
                 Swap(array, i, minIndex);
                 render(array, i, minIndex);
+                Thread.Sleep(AlgorithmSettings.Delay);
             }
         }
 

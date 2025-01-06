@@ -4,6 +4,6 @@
     {
         string Name { get; }
 
-        void Sort(int[] array, Action<int[], int, int> render);
+        void Sort(int[] array, Action<int[], int, int> render, CancellationToken cancellationToken);
     }
 }

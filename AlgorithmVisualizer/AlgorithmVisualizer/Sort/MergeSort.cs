@@ -1,4 +1,5 @@
 ﻿using AlgorithmVisualizer.Sort.Interfaces;
+using AlgorithmVisualizer.Utils.AlgorithmVisualizer.Utils;
 
 namespace AlgorithmVisualizer.Sort
 {
@@ -6,26 +7,31 @@ namespace AlgorithmVisualizer.Sort
     {
         public string Name => "Merge Sort";
 
-        public void Sort(int[] array, Action<int[], int, int> render)
+        public void Sort(int[] array, Action<int[], int, int> render, CancellationToken cancellationToken)
         {
-            MergeSortRecursive(array, 0, array.Length - 1, render);
+            MergeSortRecursive(array, 0, array.Length - 1, render, cancellationToken);
         }
 
-        private void MergeSortRecursive(int[] array, int left, int right, Action<int[], int, int> render)
+        private void MergeSortRecursive(int[] array, int left, int right, Action<int[], int, int> render, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (left < right)
             {
                 int middle = (left + right) / 2;
 
-                MergeSortRecursive(array, left, middle, render);
-                MergeSortRecursive(array, middle + 1, right, render);
+                MergeSortRecursive(array, left, middle, render, cancellationToken);
 
-                Merge(array, left, middle, right, render);
+                MergeSortRecursive(array, middle + 1, right, render, cancellationToken);
+
+                Merge(array, left, middle, right, render, cancellationToken);
             }
         }
 
-        private void Merge(int[] array, int left, int middle, int right, Action<int[], int, int> render)
+        private void Merge(int[] array, int left, int middle, int right, Action<int[], int, int> render, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             int n1 = middle - left + 1;
             int n2 = right - middle;
 
@@ -39,6 +45,8 @@ namespace AlgorithmVisualizer.Sort
 
             while (iIndex < n1 && jIndex < n2)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (leftArray[iIndex] <= rightArray[jIndex])
                 {
                     array[kIndex] = leftArray[iIndex];
@@ -49,22 +57,30 @@ namespace AlgorithmVisualizer.Sort
                     array[kIndex] = rightArray[jIndex];
                     jIndex++;
                 }
+
                 render(array, kIndex, -1);
+                Thread.Sleep(AlgorithmSettings.Delay);
                 kIndex++;
             }
 
             while (iIndex < n1)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 array[kIndex] = leftArray[iIndex];
                 render(array, kIndex, -1);
+                Thread.Sleep(AlgorithmSettings.Delay);
                 iIndex++;
                 kIndex++;
             }
 
             while (jIndex < n2)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 array[kIndex] = rightArray[jIndex];
                 render(array, kIndex, -1);
+                Thread.Sleep(AlgorithmSettings.Delay);
                 jIndex++;
                 kIndex++;
             }
