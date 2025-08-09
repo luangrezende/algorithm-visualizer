@@ -73,45 +73,31 @@ jobs:
     - name: Run Tests
       run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
-    - name: Publish Self-Contained (Windows x64)
+    - name: Publish Application (Windows x64)
       run: |
         dotnet publish ${{ env.PROJECT_PATH }} `
           --configuration Release `
           --runtime win-x64 `
           --self-contained `
-          --output "./publish/win-x64-selfcontained" `
+          --output "./publish/win-x64" `
           -p:PublishSingleFile=true `
           -p:PublishTrimmed=false `
           -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:GenerateDocumentationFile=false `
+          -p:DebugType=None `
+          -p:DebugSymbols=false `
           -p:AssemblyVersion=${{ steps.version.outputs.version_number }} `
           -p:FileVersion=${{ steps.version.outputs.version_number }} `
           -p:InformationalVersion=${{ steps.version.outputs.version }}
 
-    - name: Publish Framework-Dependent (Windows x64)
+    - name: Create Release Archive
       run: |
-        dotnet publish ${{ env.PROJECT_PATH }} `
-          --configuration Release `
-          --runtime win-x64 `
-          --no-self-contained `
-          --output "./publish/win-x64-framework" `
-          -p:PublishSingleFile=true `
-          -p:AssemblyVersion=${{ steps.version.outputs.version_number }} `
-          -p:FileVersion=${{ steps.version.outputs.version_number }} `
-          -p:InformationalVersion=${{ steps.version.outputs.version }}
-
-    - name: Create Release Archives
-      run: |
-        # Create self-contained archive
-        Compress-Archive -Path "./publish/win-x64-selfcontained/*" -DestinationPath "./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip"
+        # Create release archive
+        Compress-Archive -Path "./publish/win-x64/*" -DestinationPath "./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip"
         
-        # Create framework-dependent archive  
-        Compress-Archive -Path "./publish/win-x64-framework/*" -DestinationPath "./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip"
-        
-        # Verify archives were created
-        Write-Host "Created archives:"
-        Get-ChildItem "${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-*.zip" | ForEach-Object {
-          Write-Host "  $($_.Name) - $([math]::Round($_.Length / 1MB, 2)) MB"
-        }
+        # Verify archive was created
+        $archive = Get-Item "${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip"
+        Write-Host "Created archive: $($archive.Name) - $([math]::Round($archive.Length / 1MB, 2)) MB"
       shell: powershell
 
     - name: Generate Release Notes
@@ -128,30 +114,35 @@ jobs:
         
         # Generate release notes
         $releaseNotes = @"
-        ## ${{ env.PROJECT_NAME }} ${{ steps.version.outputs.version }}
+        ## 🚀 ${{ env.PROJECT_NAME }} ${{ steps.version.outputs.version }}
         
-        ### 📝 Changes in this release
+        Interactive sorting algorithm visualizer for educational purposes.
+        
+        ### 📋 What's Changed
         $commits
         
-        ### 📦 Download Options
+        ### � Quick Start
+        1. **Download** the ZIP file below
+        2. **Extract** to any folder
+        3. **Run** ``AlgorithmVisualizer.exe``
+        4. **Select** an algorithm and customize array size/speed
+        5. **Click Start** to watch the sorting visualization
         
-        **Self-Contained (Recommended)**
-        - No .NET installation required
-        - File: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip``
+        ### ✨ Features
+        - 6 sorting algorithms with real-time visualization
+        - Adjustable array size (10-500 elements)
+        - Variable speed control for learning
+        - Performance metrics and comparisons
+        - No installation required - just download and run!
         
-        **Framework-Dependent**
-        - Requires .NET 8.0 Runtime
-        - File: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip``
-        
-        ### 🎯 Supported Algorithms
-        Bubble Sort • Quick Sort • Merge Sort • Selection Sort • Insertion Sort • Heap Sort
-        
-        ### 💻 System Requirements
-        - Windows 10/11 (x64)
-        - .NET 8.0 Runtime (included in self-contained)
+        ### 💻 Requirements
+        - Windows 10/11 (64-bit)
+        - No additional software needed
         
         ---
-        **Full Changelog**: https://github.com/${{ github.repository }}/compare/$previousTag...${{ steps.version.outputs.version }}
+        📦 **Download**: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip``
+        
+        📚 **Full Changelog**: https://github.com/${{ github.repository }}/compare/$previousTag...${{ steps.version.outputs.version }}
         "@
         
         # Save release notes as multiline output
@@ -169,8 +160,7 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          ${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
-          ${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip
+          ${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -179,6 +169,5 @@ jobs:
       with:
         name: ${{ env.ARTIFACT_NAME }}-${{ steps.version.outputs.version }}
         path: |
-          ./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
-          ./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip
+          ./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip
         retention-days: 30

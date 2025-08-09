@@ -29,6 +29,10 @@
     <PublishTrimmed>false</PublishTrimmed>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     
+    <!-- Exclude XML documentation files from publish -->
+    <GenerateDocumentationFile Condition="'$(Configuration)' == 'Debug'">true</GenerateDocumentationFile>
+    <GenerateDocumentationFile Condition="'$(Configuration)' == 'Release'">false</GenerateDocumentationFile>
+    
     <!-- Code Analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
