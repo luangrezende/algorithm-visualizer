@@ -1,4 +1,4 @@
-﻿namespace AlgorithmVisualizer.Core.Sort.Interfaces
+namespace AlgorithmVisualizer.Core.Sort.Interfaces
 {
     public interface ISortingAlgorithm
     {

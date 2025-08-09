@@ -1,4 +1,4 @@
-﻿using AlgorithmVisualizer.Core.Sort.Interfaces;
+using AlgorithmVisualizer.Core.Sort.Interfaces;
 using AlgorithmVisualizer.Utils;
 
 namespace AlgorithmVisualizer.Core.Sort

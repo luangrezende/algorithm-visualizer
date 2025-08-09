@@ -1,4 +1,4 @@
-﻿using AlgorithmVisualizer.UI.Models;
+using AlgorithmVisualizer.UI.Models;
 using AlgorithmVisualizer.UI.Services;
 using System.Windows;
 using System.Windows.Controls;

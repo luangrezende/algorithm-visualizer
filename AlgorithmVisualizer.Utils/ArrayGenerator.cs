@@ -1,4 +1,4 @@
-﻿namespace AlgorithmVisualizer.Utils
+namespace AlgorithmVisualizer.Utils
 {
     public static class ArrayGenerator
     {

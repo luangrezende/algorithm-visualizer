@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using AlgorithmVisualizer.UI.Controllers;
 using AlgorithmVisualizer.UI.Models;
 using AlgorithmVisualizer.UI.Services;
@@ -47,7 +47,7 @@ namespace AlgorithmVisualizer.UI
 
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
-            
+
             _isRunning = true;
             UpdateButtonStates();
 
@@ -65,8 +65,8 @@ namespace AlgorithmVisualizer.UI
             {
                 await _sortingController.RunSort(algorithm, data, _cancellationTokenSource.Token);
             }
-            catch (OperationCanceledException) 
-            { 
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception ex)
             {
@@ -111,7 +111,7 @@ namespace AlgorithmVisualizer.UI
         {
             _isRunning = false;
             UpdateButtonStates();
-            
+
             try
             {
                 _cancellationTokenSource?.Dispose();
@@ -149,7 +149,7 @@ namespace AlgorithmVisualizer.UI
                 {
                     _cancellationTokenSource?.Dispose();
                     _cancellationTokenSource = new CancellationTokenSource();
-                    
+
                     await _pathController.RunPathfinding(algorithm, _cancellationTokenSource.Token);
                 }
                 catch (OperationCanceledException)
@@ -175,7 +175,7 @@ namespace AlgorithmVisualizer.UI
                 }
             };
 
-            PathfindingCanvas.Loaded += (s, e) => 
+            PathfindingCanvas.Loaded += (s, e) =>
             {
                 try
                 {
@@ -198,7 +198,7 @@ namespace AlgorithmVisualizer.UI
             catch (ObjectDisposedException)
             {
             }
-            
+
             base.OnClosed(e);
         }
     }

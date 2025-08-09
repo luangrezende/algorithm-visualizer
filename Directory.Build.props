@@ -12,8 +12,8 @@
     <Company>Algorithm Visualizer</Company>
     <Product>Algorithm Visualizer</Product>
     <Copyright>Copyright © 2025 Algorithm Visualizer Contributors</Copyright>
-    <PackageProjectUrl>https://github.com/your-username/algorithm-visualizer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/your-username/algorithm-visualizer</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/luangrezende/algorithm-visualizer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/luangrezende/algorithm-visualizer</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     
@@ -22,6 +22,7 @@
     <WarningsAsErrors />
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     
     <!-- Performance -->
     <DebugType>portable</DebugType>

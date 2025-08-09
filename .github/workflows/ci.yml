@@ -98,19 +98,37 @@ jobs:
           --configuration Release `
           --verbosity normal `
           --property:RunAnalyzersDuringBuild=true `
-          --property:TreatWarningsAsErrors=false
+          --property:TreatWarningsAsErrors=false `
+          --property:_SkipUpgradeNetAnalyzersNuGetWarning=true
 
     - name: Install dotnet format
       run: dotnet tool install -g dotnet-format
 
-    - name: Check Code Formatting
+    - name: Format Code
       run: |
-        dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes --verbosity diagnostic
+        dotnet format ${{ env.SOLUTION_PATH }} --verbosity normal
+
+    - name: Check for Code Changes
+      run: |
+        $changes = git diff --name-only
+        if ($changes) {
+          Write-Host "The following files were reformatted:"
+          $changes | ForEach-Object { Write-Host "  $_" }
+          Write-Host "##[error]Code formatting issues found. Please run 'dotnet format' locally and commit the changes."
+          exit 1
+        } else {
+          Write-Host "No formatting issues found."
+        }
+      shell: powershell
 
   security-scan:
     name: Security Scan
     runs-on: windows-latest
     needs: build-and-test
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     
     steps:
     - name: Checkout Repository
@@ -125,7 +143,7 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'

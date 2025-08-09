@@ -1,4 +1,4 @@
-﻿using AlgorithmVisualizer.UI.Services;
+using AlgorithmVisualizer.UI.Services;
 using AlgorithmVisualizer.Core.Sort;
 using AlgorithmVisualizer.Core.Sort.Interfaces;
 using System.Windows.Controls;
@@ -67,7 +67,7 @@ namespace AlgorithmVisualizer.UI.Controllers
                         System.Diagnostics.Debug.WriteLine($"Canvas clear error: {ex.Message}");
                     }
                 });
-                
+
                 throw;
             }
         }
