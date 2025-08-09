@@ -129,35 +129,35 @@ jobs:
         
         # Generate release notes
         $releaseNotes = @"
-        ## 🚀 ${{ env.PROJECT_NAME }} ${{ steps.version.outputs.version }}
+        ## ${{ env.PROJECT_NAME }} ${{ steps.version.outputs.version }}
         
         Interactive sorting algorithm visualizer for educational purposes.
         
-        ### 📋 What's Changed
+        ### What's Changed
         $commits
         
-        ### � Quick Start
+        ### Quick Start
         1. **Download** the ZIP file below
         2. **Extract** to any folder
-        3. **Run** ``AlgorithmVisualizer.exe``
+        3. **Run** AlgorithmVisualizer.exe
         4. **Select** an algorithm and customize array size/speed
         5. **Click Start** to watch the sorting visualization
         
-        ### ✨ Features
+        ### Features
         - 6 sorting algorithms with real-time visualization
         - Adjustable array size (10-500 elements)
         - Variable speed control for learning
         - Performance metrics and comparisons
         - No installation required - just download and run!
         
-        ### 💻 Requirements
+        ### Requirements
         - Windows 10/11 (64-bit)
         - No additional software needed
         
         ---
-        📦 **Download**: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip``
+        **Download**: ${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip
         
-        📚 **Full Changelog**: $changelogUrl
+        **Full Changelog**: $changelogUrl
         "@
         
         # Save release notes as multiline output
