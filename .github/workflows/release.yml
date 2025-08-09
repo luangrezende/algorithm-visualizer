@@ -103,49 +103,41 @@ jobs:
     - name: Generate Release Notes
       id: release_notes
       run: |
+        # Get the previous tag for comparison
+        $previousTag = git describe --tags --abbrev=0 HEAD~1 2>$null
+        if (-not $previousTag) {
+          $previousTag = "HEAD~10"  # Fallback if no previous tag
+        }
+        
+        # Get commits since last release
+        $commits = git log --pretty=format:"- %s" $previousTag..HEAD
+        
+        # Generate release notes
         $releaseNotes = @"
         ## Algorithm Visualizer ${{ steps.version.outputs.version }}
         
-        ### 🚀 What's New
-        - Latest stable release with performance improvements
-        - Enhanced UI responsiveness and visual feedback
-        - Improved algorithm execution with better cancellation support
-        - Updated to .NET 8.0 for optimal performance
+        ### 📝 Changes in this release
+        $commits
         
-        ### Download Options
+        ### 📦 Download Options
         
-        #### Self-Contained (Recommended)
-        - **No .NET installation required**
-        - Includes all necessary runtime files
-        - Larger download size but easier deployment
-        - **File**: `AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip`
+        **Self-Contained (Recommended)**
+        - No .NET installation required
+        - File: ``AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip``
         
-        #### Framework-Dependent
-        - **Requires .NET 8.0 Runtime** ([Download here](https://dotnet.microsoft.com/download/dotnet/8.0))
-        - Smaller download size
-        - Shared runtime with other .NET applications
-        - **File**: `AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip`
+        **Framework-Dependent**
+        - Requires .NET 8.0 Runtime
+        - File: ``AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip``
         
-        ### System Requirements
-        - **OS**: Windows 10/11 (x64)
-        - **Runtime**: .NET 8.0 (included in self-contained version)
-        - **Memory**: 512 MB RAM minimum
-        - **Storage**: 200 MB available space
+        ### 🎯 Supported Algorithms
+        Bubble Sort • Quick Sort • Merge Sort • Selection Sort • Insertion Sort • Heap Sort
         
-        ### Supported Algorithms
-        - Bubble Sort, Quick Sort, Merge Sort
-        - Selection Sort, Insertion Sort, Heap Sort
-        - Real-time visualization with performance metrics
-        - Educational tooltips and algorithm comparison
+        ### 💻 System Requirements
+        - Windows 10/11 (x64)
+        - .NET 8.0 Runtime (included in self-contained)
         
-        ### Installation
-        1. Download your preferred version above
-        2. Extract the ZIP file to your desired location
-        3. Run `AlgorithmVisualizer.exe`
-        4. Enjoy learning algorithms visually!
-        
-        ### Bug Reports & Feature Requests
-        Found an issue or have a suggestion? Please [open an issue](https://github.com/${{ github.repository }}/issues) on GitHub.
+        ---
+        **Full Changelog**: https://github.com/${{ github.repository }}/compare/$previousTag...${{ steps.version.outputs.version }}
         "@
         
         # Save release notes as multiline output
