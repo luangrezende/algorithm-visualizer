@@ -1,0 +1,173 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_PATH: 'AlgorithmVisualizer.UI/AlgorithmVisualizer.UI.csproj'
+  SOLUTION_PATH: 'AlgorithmVisualizer.sln'
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Get Version
+      id: version
+      run: |
+        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+          $version = "${{ github.event.inputs.version }}"
+        } else {
+          $version = "${{ github.ref_name }}"
+        }
+        $versionNumber = $version -replace '^v', ''
+        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+        Write-Output "version_number=$versionNumber" >> $env:GITHUB_OUTPUT
+        Write-Output "Version: $version, Version Number: $versionNumber"
+      shell: powershell
+
+    - name: Restore Dependencies
+      run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+    - name: Build Solution
+      run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore
+
+    - name: Run Tests
+      run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+    - name: Publish Self-Contained (Windows x64)
+      run: |
+        dotnet publish ${{ env.PROJECT_PATH }} `
+          --configuration Release `
+          --runtime win-x64 `
+          --self-contained `
+          --output "./publish/win-x64-selfcontained" `
+          -p:PublishSingleFile=true `
+          -p:PublishTrimmed=false `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:AssemblyVersion=${{ steps.version.outputs.version_number }} `
+          -p:FileVersion=${{ steps.version.outputs.version_number }} `
+          -p:InformationalVersion=${{ steps.version.outputs.version }}
+
+    - name: Publish Framework-Dependent (Windows x64)
+      run: |
+        dotnet publish ${{ env.PROJECT_PATH }} `
+          --configuration Release `
+          --runtime win-x64 `
+          --no-self-contained `
+          --output "./publish/win-x64-framework" `
+          -p:PublishSingleFile=true `
+          -p:AssemblyVersion=${{ steps.version.outputs.version_number }} `
+          -p:FileVersion=${{ steps.version.outputs.version_number }} `
+          -p:InformationalVersion=${{ steps.version.outputs.version }}
+
+    - name: Create Release Archives
+      run: |
+        # Create self-contained archive
+        Compress-Archive -Path "./publish/win-x64-selfcontained/*" -DestinationPath "./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip"
+        
+        # Create framework-dependent archive  
+        Compress-Archive -Path "./publish/win-x64-framework/*" -DestinationPath "./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip"
+        
+        # Verify archives were created
+        Write-Host "Created archives:"
+        Get-ChildItem "AlgorithmVisualizer-${{ steps.version.outputs.version }}-*.zip" | ForEach-Object {
+          Write-Host "  $($_.Name) - $([math]::Round($_.Length / 1MB, 2)) MB"
+        }
+      shell: powershell
+
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        $releaseNotes = @"
+        ## Algorithm Visualizer ${{ steps.version.outputs.version }}
+        
+        ### 🚀 What's New
+        - Latest stable release with performance improvements
+        - Enhanced UI responsiveness and visual feedback
+        - Improved algorithm execution with better cancellation support
+        - Updated to .NET 8.0 for optimal performance
+        
+        ### Download Options
+        
+        #### Self-Contained (Recommended)
+        - **No .NET installation required**
+        - Includes all necessary runtime files
+        - Larger download size but easier deployment
+        - **File**: `AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip`
+        
+        #### Framework-Dependent
+        - **Requires .NET 8.0 Runtime** ([Download here](https://dotnet.microsoft.com/download/dotnet/8.0))
+        - Smaller download size
+        - Shared runtime with other .NET applications
+        - **File**: `AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip`
+        
+        ### System Requirements
+        - **OS**: Windows 10/11 (x64)
+        - **Runtime**: .NET 8.0 (included in self-contained version)
+        - **Memory**: 512 MB RAM minimum
+        - **Storage**: 200 MB available space
+        
+        ### Supported Algorithms
+        - Bubble Sort, Quick Sort, Merge Sort
+        - Selection Sort, Insertion Sort, Heap Sort
+        - Real-time visualization with performance metrics
+        - Educational tooltips and algorithm comparison
+        
+        ### Installation
+        1. Download your preferred version above
+        2. Extract the ZIP file to your desired location
+        3. Run `AlgorithmVisualizer.exe`
+        4. Enjoy learning algorithms visually!
+        
+        ### Bug Reports & Feature Requests
+        Found an issue or have a suggestion? Please [open an issue](https://github.com/${{ github.repository }}/issues) on GitHub.
+        "@
+        
+        # Save release notes as multiline output
+        Write-Output "notes<<EOF" >> $env:GITHUB_OUTPUT
+        Write-Output $releaseNotes >> $env:GITHUB_OUTPUT
+        Write-Output "EOF" >> $env:GITHUB_OUTPUT
+      shell: powershell
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        name: Algorithm Visualizer ${{ steps.version.outputs.version }}
+        body: ${{ steps.release_notes.outputs.notes }}
+        draft: false
+        prerelease: false
+        files: |
+          AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
+          AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: algorithm-visualizer-${{ steps.version.outputs.version }}
+        path: |
+          ./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
+          ./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip
+        retention-days: 30

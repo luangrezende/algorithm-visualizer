@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace AlgorithmVisualizerGUI
+namespace AlgorithmVisualizer.UI
 {
     public partial class App : Application
     {

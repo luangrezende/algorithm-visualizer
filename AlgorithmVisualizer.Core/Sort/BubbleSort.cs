@@ -1,7 +1,7 @@
-﻿using AlgorithmVisualizer.Sort.Interfaces;
-using AlgorithmVisualizer.Utils.AlgorithmVisualizer.Utils;
+﻿using AlgorithmVisualizer.Core.Sort.Interfaces;
+using AlgorithmVisualizer.Utils;
 
-namespace AlgorithmVisualizer.Sort
+namespace AlgorithmVisualizer.Core.Sort
 {
     public class BubbleSort : ISortingAlgorithm
     {

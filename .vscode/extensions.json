@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "formulahendry.dotnet-test-explorer",
+        "jmrog.vscode-nuget-package-manager",
+        "kreativ-software.csharpextensions",
+        "adrianwilczynski.namespace",
+        "patcx.vscode-nuget-gallery"
+    ]
+}
