@@ -104,13 +104,28 @@ jobs:
       id: release_notes
       run: |
         # Get the previous tag for comparison
-        $previousTag = git describe --tags --abbrev=0 HEAD~1 2>$null
-        if (-not $previousTag) {
-          $previousTag = "HEAD~10"  # Fallback if no previous tag
+        $previousTag = $null
+        try {
+          $previousTag = git describe --tags --abbrev=0 HEAD~1 2>$null
+          if ($LASTEXITCODE -ne 0) { $previousTag = $null }
+        } catch {
+          $previousTag = $null
         }
         
-        # Get commits since last release
-        $commits = git log --pretty=format:"- %s" $previousTag..HEAD
+        # Get commits since last release or all commits if no previous tag
+        if ($previousTag) {
+          $commits = git log --pretty=format:"- %s" $previousTag..HEAD
+          $changelogUrl = "https://github.com/${{ github.repository }}/compare/$previousTag...${{ steps.version.outputs.version }}"
+        } else {
+          # First release - get recent commits
+          $commits = git log --pretty=format:"- %s" -10
+          $changelogUrl = "https://github.com/${{ github.repository }}/commits/${{ steps.version.outputs.version }}"
+        }
+        
+        # Handle case where no commits are found
+        if (-not $commits) {
+          $commits = "- Initial release"
+        }
         
         # Generate release notes
         $releaseNotes = @"
@@ -142,7 +157,7 @@ jobs:
         ---
         📦 **Download**: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win.zip``
         
-        📚 **Full Changelog**: https://github.com/${{ github.repository }}/compare/$previousTag...${{ steps.version.outputs.version }}
+        📚 **Full Changelog**: $changelogUrl
         "@
         
         # Save release notes as multiline output
