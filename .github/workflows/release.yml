@@ -15,6 +15,8 @@ env:
   DOTNET_VERSION: '8.0.x'
   PROJECT_PATH: 'AlgorithmVisualizer.UI/AlgorithmVisualizer.UI.csproj'
   SOLUTION_PATH: 'AlgorithmVisualizer.sln'
+  PROJECT_NAME: 'AlgorithmVisualizer'
+  ARTIFACT_NAME: 'algorithm-visualizer'
 
 jobs:
   build-and-release:
@@ -48,6 +50,18 @@ jobs:
         Write-Output "version=$version" >> $env:GITHUB_OUTPUT
         Write-Output "version_number=$versionNumber" >> $env:GITHUB_OUTPUT
         Write-Output "Version: $version, Version Number: $versionNumber"
+      shell: powershell
+
+    - name: Extract Project Info
+      id: project_info
+      run: |
+        # Extract project name from repository name if needed
+        $repoName = "${{ github.repository }}" -split "/" | Select-Object -Last 1
+        $projectDisplayName = $repoName -replace '-', ' ' | ForEach-Object {(Get-Culture).TextInfo.ToTitleCase($_)}
+        
+        Write-Output "repo_name=$repoName" >> $env:GITHUB_OUTPUT  
+        Write-Output "display_name=$projectDisplayName" >> $env:GITHUB_OUTPUT
+        Write-Output "Repository: $repoName, Display Name: $projectDisplayName"
       shell: powershell
 
     - name: Restore Dependencies
@@ -88,14 +102,14 @@ jobs:
     - name: Create Release Archives
       run: |
         # Create self-contained archive
-        Compress-Archive -Path "./publish/win-x64-selfcontained/*" -DestinationPath "./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip"
+        Compress-Archive -Path "./publish/win-x64-selfcontained/*" -DestinationPath "./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip"
         
         # Create framework-dependent archive  
-        Compress-Archive -Path "./publish/win-x64-framework/*" -DestinationPath "./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip"
+        Compress-Archive -Path "./publish/win-x64-framework/*" -DestinationPath "./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip"
         
         # Verify archives were created
         Write-Host "Created archives:"
-        Get-ChildItem "AlgorithmVisualizer-${{ steps.version.outputs.version }}-*.zip" | ForEach-Object {
+        Get-ChildItem "${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-*.zip" | ForEach-Object {
           Write-Host "  $($_.Name) - $([math]::Round($_.Length / 1MB, 2)) MB"
         }
       shell: powershell
@@ -114,7 +128,7 @@ jobs:
         
         # Generate release notes
         $releaseNotes = @"
-        ## Algorithm Visualizer ${{ steps.version.outputs.version }}
+        ## ${{ env.PROJECT_NAME }} ${{ steps.version.outputs.version }}
         
         ### 📝 Changes in this release
         $commits
@@ -123,11 +137,11 @@ jobs:
         
         **Self-Contained (Recommended)**
         - No .NET installation required
-        - File: ``AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip``
+        - File: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip``
         
         **Framework-Dependent**
         - Requires .NET 8.0 Runtime
-        - File: ``AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip``
+        - File: ``${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip``
         
         ### 🎯 Supported Algorithms
         Bubble Sort • Quick Sort • Merge Sort • Selection Sort • Insertion Sort • Heap Sort
@@ -150,21 +164,21 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.version.outputs.version }}
-        name: Algorithm Visualizer ${{ steps.version.outputs.version }}
+        name: ${{ env.PROJECT_NAME }} ${{ steps.version.outputs.version }}
         body: ${{ steps.release_notes.outputs.notes }}
         draft: false
         prerelease: false
         files: |
-          AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
-          AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip
+          ${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
+          ${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: algorithm-visualizer-${{ steps.version.outputs.version }}
+        name: ${{ env.ARTIFACT_NAME }}-${{ steps.version.outputs.version }}
         path: |
-          ./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
-          ./AlgorithmVisualizer-${{ steps.version.outputs.version }}-win-x64-framework.zip
+          ./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-selfcontained.zip
+          ./${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version }}-win-x64-framework.zip
         retention-days: 30
